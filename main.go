@@ -1,22 +1,30 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/atotto/clipboard"
 )
 
 func main() {
-	var sqlWithParams string
+	sqlWithParams, err := clipboard.ReadAll()
+	if err != nil {
+		fmt.Println("Could not read clipboard", err)
+		os.Exit(1)
+	}
 
-	fmt.Println("Enter your sql with params:")
-	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Print("\n Is it you sql you would like to substitute?\n\n")
+	fmt.Println(sqlWithParams)
+	fmt.Print("\n")
 
-	if scanner.Scan() {
-		input := scanner.Text()
-		sqlWithParams = input
+	if AskQuestion("Y/n:") {
+		fmt.Println("Ok, let's go")
+	} else {
+		fmt.Println("Then copy another stuff and run me again")
+		os.Exit(0)
 	}
 
 	fmt.Println("\n Got your params, thanks", sqlWithParams)
@@ -28,8 +36,7 @@ func main() {
 
 	var params []interface{}
 
-	err := json.Unmarshal([]byte(paramsString), &params)
-	if err != nil {
+	if err := json.Unmarshal([]byte(paramsString), &params); err != nil {
 		fmt.Println("Error:", err)
 		panic(err)
 	}
